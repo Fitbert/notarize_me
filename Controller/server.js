@@ -38,7 +38,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/auth', authController);
 app.use('/user', userController);
 
-/ Check if the user is authenticated
+// Check if the user is authenticated
 function isAuthenticated(req) {
   return req.session.authenticated;
 }
