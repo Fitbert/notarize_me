@@ -37,3 +37,4 @@ As a user, I want to:
 - Github Repo: https://github.com/FailedPastry/notarize_me
 - Deployed Site: 
 - Video Demo : (https://www.youtube.com/watch?v=eThaE1ev27k)
+- Presentation: https://docs.google.com/presentation/d/1KrlH8ZCZZzeYxyh8Qk-rmpx1HT3HG2eSXcrGEf8-n7o/edit?usp=sharing

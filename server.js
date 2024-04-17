@@ -1,4 +1,3 @@
-
 const express = require('express');
 const session = require('express-session');
 const path = require('path');
@@ -6,13 +5,13 @@ const exphbs = require('express-handlebars');
 const dotenv = require('dotenv');
 const fileUpload = require('express-fileupload');
 const cors = require('cors');
-const filesPayloadExists = require('./middleware/filesPayloadExists');
-const fileExtLimiter = require('./middleware/fileExtLimiter');
-const fileSizeLimiter = require('./middleware/fileSizeLimiter');
+const mysql = require('mysql2'); // Import mysql2 package
+
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3001;
+
 
 const sess = {
   secret: process.env.SESSION_SECRET || 'Super secret secret',
@@ -34,6 +33,24 @@ app.engine('handlebars', hbs.engine);
 app.set('view engine', 'handlebars');
 app.use(express.static('public'));
 app.use(express.static(path.join(__dirname, 'public')));
+
+// Create MySQL database connection
+const db = mysql.createConnection({
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_DATABASE
+});
+
+// Connect to the database
+db.connect((err) => {
+  if (err) {
+    console.error('Error connecting to MySQL database:', err);
+    return;
+  }
+  console.log('Connected to MySQL database');
+});
+
 
 // Check if the user is authenticated
 function isAuthenticated(req) {
