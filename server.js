@@ -31,6 +31,9 @@ const hbs = exphbs.create({
   partialsDir: path.join(__dirname, 'views', 'partials'),
   views: path.join(__dirname, 'views') // Specify the views directory
 });
+
+app.set('views', path.join(__dirname, 'views'));
+
 app.engine('handlebars', hbs.engine);
 app.set('view engine', 'handlebars');
 app.use(express.static('public'));
