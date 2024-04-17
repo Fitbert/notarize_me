@@ -5,15 +5,15 @@ const exphbs = require('express-handlebars');
 const dotenv = require('dotenv');
 const fileUpload = require('express-fileupload');
 const cors = require('cors');
-const mysql = require('mysql2'); // Import mysql2 package
-const filesPayloadExists = require('./middleware/filesPayloadExists');
-const fileExtLimiter = require('./middleware/fileExtLimiter');
-const fileSizeLimiter = require('./middleware/fileSizeLimiter');
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
+const User = require('./models/User'); // Assuming you have a User model
+const sequelize = require('./config/database'); // Assuming you have Sequelize configured
+
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3001;
-
 
 const sess = {
   secret: process.env.SESSION_SECRET || 'Super secret secret',
@@ -29,53 +29,23 @@ app.use(express.urlencoded({ extended: true }));
 const hbs = exphbs.create({
   defaultLayout: 'main',
   partialsDir: path.join(__dirname, 'views', 'partials'),
-  views: path.join(__dirname, 'views') // Specify the views directory
+  views: path.join(__dirname, 'views')
 });
 
 app.set('views', path.join(__dirname, 'views'));
-
 app.engine('handlebars', hbs.engine);
 app.set('view engine', 'handlebars');
-app.use(express.static('public'));
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Create MySQL database connection
-const db = mysql.createConnection({
-  host: process.env.DB_HOST,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_DATABASE
-});
-
-
 // Connect to the database
-db.connect((err) => {
-  if (err) {
-    console.error('Error connecting to MySQL database:', err);
-    return;
-  }
-  console.log('Connected to MySQL database');
-});
-
-
-// Check if the user is authenticated
-function isAuthenticated(req) {
-  return req.session.authenticated;
-}
+sequelize.authenticate()
+  .then(() => console.log('Connected to the database'))
+  .catch(error => console.error('Error connecting to the database:', error));
 
 // Route to render the main HTML page
 app.get('/', (req, res) => {
   res.render('editdraft'); // Render the editdraft partial
 });
-
-// app.get('/', (req, res) => {
-//    {
-//     res.render('editdraft'); // Render the editdraft partial if authenticated
-//   } else {
-//     res.render('home'); // Render the home view if not authenticated
-//   }
-// });
-
 
 // Route for user login
 app.post('/login', async (req, res) => {
@@ -83,7 +53,7 @@ app.post('/login', async (req, res) => {
 
   try {
     // Find user by email
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ where: { email } });
 
     // Check if user exists
     if (!user) {
@@ -98,7 +68,7 @@ app.post('/login', async (req, res) => {
     }
 
     // Generate JWT
-    const token = jwt.sign({ userId: user._id }, 'your-secret-key', { expiresIn: '1h' });
+    const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, { expiresIn: '1h' });
 
     res.json({ token });
   } catch (error) {
@@ -118,79 +88,57 @@ app.get('/create', (req, res) => {
   res.render('create'); // Render the create account partial
 });
 
-// app.get('/', (req, res) => {
-  
-
-//   res.render('partials/editdraft'); // Render the main Handlebars template
-// });
-
-
-
 // Express route for user signup
 app.post('/api/signup', async (req, res) => {
   const { username, email, password } = req.body;
   
-  // Save user data to MongoDB using Mongoose
-  const newUser = new User({ username, email, password });
-  await newUser.save();
-  
-  res.status(201).json({ message: 'User registered successfully' });
-});
-
-
- // Allow CORS requests from localhost for development purposes
- const allowedOrigins = ['http://localhost:*'];
-
- app.use(cors({
-   origin: allowedOrigins,
- }));
-
-app.options('*', cors());
-
-/*app.get('/upload', (req, res) => {
-  res.json(repos);
-});
-*/
-
-app.get('/upload', (req, res) => {
-  res.send('This is the upload endpoint');
-});
-
-
-// app.get('/upload', (req, res) => {
-// res.sendFile(path.join(__dirname, 'index.html'));
-// }); 
-
-
-app.post('/upload',
-  fileUpload({ createParentPath: true }),
-  filesPayloadExists,
-  fileExtLimiter(['.png', '.jpg', '.jpeg']),
-  fileSizeLimiter,
-  async (req, res) => {
   try {
-    const files = req.files;
-
-    const movePromises = [];
-    Object.keys(files).forEach(key => {
-      if (files[key]) {
-        const filepath = path.join(__dirname, 'files', files[key].name);
-        movePromises.push(files[key].mv(filepath));
-        console.log(files[key].name);
-        console.log(files[key].size);
-      }
-    });
-
-    await Promise.all(movePromises);
-
-    return res.json({ status: 'success', message: Object.keys(files).toString() });
-  } catch (err) {
-    console.error(err);
-    return res.status(500).json({ status: "error", message: err });
+    // Hash password
+    const hashedPassword = await bcrypt.hash(password, 10);
+  
+    // Save user data to database
+    await User.create({ username, email, password: hashedPassword });
+    
+    res.status(201).json({ message: 'User registered successfully' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Internal server error' });
   }
 });
 
+// Allow CORS requests from localhost for development purposes
+const allowedOrigins = ['http://localhost:*'];
+app.use(cors({
+  origin: allowedOrigins,
+}));
+app.options('*', cors());
 
+// Handle file upload
+app.post('/upload',
+  fileUpload({ createParentPath: true }),
+  async (req, res) => {
+    try {
+      const files = req.files;
+
+      const movePromises = [];
+      Object.keys(files).forEach(key => {
+        if (files[key]) {
+          const filepath = path.join(__dirname, 'files', files[key].name);
+          movePromises.push(files[key].mv(filepath));
+          console.log(files[key].name);
+          console.log(files[key].size);
+        }
+      });
+
+      await Promise.all(movePromises);
+
+      return res.json({ status: 'success', message: Object.keys(files).toString() });
+    } catch (err) {
+      console.error(err);
+      return res.status(500).json({ status: "error", message: err.message });
+    }
+  }
+);
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}.`);
