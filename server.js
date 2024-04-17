@@ -44,6 +44,7 @@ const db = mysql.createConnection({
   database: process.env.DB_DATABASE
 });
 
+
 // Connect to the database
 db.connect((err) => {
   if (err) {
