@@ -35,6 +35,6 @@ As a user, I want to:
 
 ## Links
 - Github Repo: https://github.com/FailedPastry/notarize_me
-- Deployed Site: 
+- Deployed Site: https://notarizeme-84d19d0fa8a2.herokuapp.com/
 - Video Demo : (https://www.youtube.com/watch?v=eThaE1ev27k)
 - Presentation: https://docs.google.com/presentation/d/1KrlH8ZCZZzeYxyh8Qk-rmpx1HT3HG2eSXcrGEf8-n7o/edit?usp=sharing

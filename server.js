@@ -6,7 +6,9 @@ const dotenv = require('dotenv');
 const fileUpload = require('express-fileupload');
 const cors = require('cors');
 const mysql = require('mysql2'); // Import mysql2 package
-
+const filesPayloadExists = require('./middleware/filesPayloadExists');
+const fileExtLimiter = require('./middleware/fileExtLimiter');
+const fileSizeLimiter = require('./middleware/fileSizeLimiter');
 dotenv.config();
 
 const app = express();
@@ -112,11 +114,11 @@ app.get('/create', (req, res) => {
   res.render('create'); // Render the create account partial
 });
 
-app.get('/', (req, res) => {
+// app.get('/', (req, res) => {
   
 
-  res.render('partials/editdraft'); // Render the main Handlebars template
-});
+//   res.render('partials/editdraft'); // Render the main Handlebars template
+// });
 
 
 
