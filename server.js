@@ -7,7 +7,7 @@ const fileUpload = require('express-fileupload');
 const cors = require('cors');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const User = require('./models/User'); // Assuming you have a User model
+const User = require('./Model/User'); // Assuming you have a User model
 const sequelize = require('./config/database'); // Assuming you have Sequelize configured
 
 
