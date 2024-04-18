@@ -35,23 +35,35 @@
   <p>&copy; 2024 NotarizeMe. All Rights Reserved.</p>
 </footer>
 <script src="https://cdn.jsdelivr.net/npm/signature_pad@2.3.2/dist/signature_pad.min.js"></script>
-  <script>
-    const canvas = document.getElementById('signature-box');
-    // Check if signaturePad is available (from signature.js)
-    if (typeof SignaturePad !== "undefined") {
-      const signaturePad = new SignaturePad(canvas);
-      // Function to clear the signature
-      function clearSignature() {
-        signaturePad.clear();
-      }
-      // Add event listener to the form submit event
-      document.getElementById('uploadForm').addEventListener('submit', function(event) {
-        event.preventDefault(); // Prevent default form submission
-        // Get the signature data as encoded string
-        const signatureData = signaturePad.toDataURL();
-        console.log("Signature data:", signatureData);
-      });
-    } else {
-      console.error("signature.js not found.");
+<script>
+  const canvas = document.getElementById('signature-box');
+  const clearButton = document.getElementById('clearButton');
+  const submitButton = document.getElementById('submitButton');
+  
+  if (typeof SignaturePad !== "undefined") {
+    const signaturePad = new SignaturePad(canvas);
+    
+    // Function to clear the signature
+    function clearSignature() {
+      signaturePad.clear();
     }
-  </script>
+    
+    // Add event listener to the clear button
+    clearButton.addEventListener('click', function() {
+      clearSignature();
+    });
+    
+    // Add event listener to the form submit event
+    document.getElementById('uploadForm').addEventListener('submit', function(event) {
+      event.preventDefault(); // Prevent default form submission
+      // Get the signature data as encoded string
+      const signatureData = signaturePad.toDataURL();
+      console.log("Signature data:", signatureData);
+      
+      // Clear the form after submission
+      this.reset();
+    });
+  } else {
+    console.error("signature.js not found.");
+  }
+</script>
