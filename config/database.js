@@ -1,19 +1,12 @@
-// config/database.js
-
 const { Sequelize } = require('sequelize');
+require('dotenv').config();
 
-let sequelize;
-
-if (process.env.JAWSDB_URL) {
-  // If JawsDB URL is available (Heroku environment)
-  sequelize = new Sequelize(process.env.JAWSDB_URL);
-} else {
-  // Otherwise, use local development configuration
-  sequelize = new Sequelize('database', 'username', 'password', {
-    host: 'localhost',
-    dialect: 'mysql', // Change the dialect to 'mysql'
-    // Remove dialectModule
-  });
-}
+const sequelize = new Sequelize(process.env.JAWSDB_URL || {
+  database: process.env.DB_NAME,
+  username: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  host: process.env.DB_HOST || 'localhost',
+  dialect: 'mysql',
+});
 
 module.exports = sequelize;
