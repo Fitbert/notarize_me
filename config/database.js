@@ -11,8 +11,8 @@ if (process.env.JAWSDB_URL) {
   // Otherwise, use local development configuration
   sequelize = new Sequelize('database', 'username', 'password', {
     host: 'localhost',
-    dialect: 'postgres',
-    dialectModule: require('pg')
+    dialect: 'mysql', // Change the dialect to 'mysql'
+    // Remove dialectModule
   });
 }
 
